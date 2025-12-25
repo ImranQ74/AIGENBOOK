@@ -2,6 +2,8 @@
 
 A modern, AI-native textbook for learning Physical AI and Humanoid Robotics, built with Docusaurus and featuring an integrated RAG chatbot.
 
+**Deployed at:** https://imranq74s-projects.vercel.app
+
 ## Features
 
 - **6 Comprehensive Chapters**: From Physical AI basics to capstone projects
