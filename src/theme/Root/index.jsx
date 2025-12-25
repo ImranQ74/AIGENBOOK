@@ -3,6 +3,8 @@ import Chatbot from '@site/src/components/Chatbot';
 import SelectText from '@site/src/components/SelectText';
 import PersonalizeModal from '@site/src/components/PersonalizeModal';
 import { ContextProvider } from '@site/src/components/Chatbot/context';
+import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 import './styles.css';
 
 export default function Root({ children }) {
@@ -38,6 +40,8 @@ export default function Root({ children }) {
       <PersonalizeModal />
       {children}
       <Chatbot isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
+      <SpeedInsights />
+      <Analytics />
     </ContextProvider>
   );
 }
