@@ -1,0 +1,186 @@
+---
+title: Chapter 2 - Basics of Humanoid Robotics
+description: Core concepts in humanoid robot design, actuation, sensing, and bipedal locomotion
+---
+
+# Basics of Humanoid Robotics
+
+Humanoid robots are robots with human-like body structure—typically including a head, torso, arms, and legs. They are designed to operate in human environments and interact with human tools.
+
+## 2.1 Humanoid Robot Anatomy
+
+### Key Components
+
+```
+Humanoid Structure:
+┌────────────────────────────────────────┐
+│              HEAD                       │
+│  - Cameras (Eyes)                      │
+│  - Microphones (Ears)                  │
+│  - Speakers (Mouth)                    │
+│  - IMU (Vestibular)                    │
+├────────────────────────────────────────┤
+│              TORSO                      │
+│  - Main Computer                       │
+│  - Battery/Power                       │
+│  - Sensors                             │
+├──────────────────┬─────────────────────┤
+│      LEFT ARM    │      RIGHT ARM      │
+│  - Shoulder      │  - Shoulder         │
+│  - Elbow         │  - Elbow            │
+│  - Wrist/Hand    │  - Wrist/Hand       │
+├──────────────────┴─────────────────────┤
+│              HIPS                       │
+├──────────────────┬─────────────────────┤
+│     LEFT LEG     │     RIGHT LEG       │
+│  - Hip           │  - Hip              │
+│  - Knee          │  - Knee             │
+│  - Ankle         │  - Ankle            │
+└──────────────────┴─────────────────────┘
+```
+
+## 2.2 Actuation Systems
+
+### Types of Actuators
+
+| Actuator Type | Examples | Characteristics |
+|---------------|----------|-----------------|
+| **Electric (DC/Brushless)** | Maxon, Dynamixel | Precise, clean, efficient |
+| **Hydraulic** | Heavy industrial robots | High force, messy |
+| **Pneumatic** | Soft robotics | Compliant, safe |
+| **Piezoelectric** | Micro-positioning | Precise, small range |
+
+### Joint Configurations
+
+Humanoid robots use two main joint types:
+
+1. **Rotary Joints**: Rotate around an axis (like a door hinge)
+2. **Prismatic Joints**: Slide linearly (like a telescope)
+
+**Degrees of Freedom (DOF)**:
+- Human arm: 7 DOF per arm
+- Human hand: 20+ DOF
+- Human leg: 6 DOF per leg
+
+## 2.3 Sensing Systems
+
+### Proprioception (Internal Sensing)
+Measures the robot's own state:
+
+```python
+# Pseudocode: Joint state reading
+joint_state = {
+    'position': encoder.read(),      # radians
+    'velocity': encoder.read_delta(), # rad/s
+    'torque': force_torque_sensor.read()  # Nm
+}
+```
+
+### Exteroception (External Sensing)
+
+| Sensor | Information | Example |
+|--------|-------------|---------|
+| **Camera** | Visual scene | RGB, depth |
+| **LiDAR** | 3D point cloud | Velodyne, Ouster |
+| **RGB-D** | Color + depth | Intel RealSense |
+| **Tactile** | Contact, texture | GelSight |
+| **Force/Torque** | Interaction forces | ATI mini45 |
+| **IMU** | Orientation, acceleration | BMI160 |
+
+## 2.4 Bipedal Locomotion
+
+### The Walking Problem
+
+Walking is inherently unstable. The center of mass must stay above the support polygon.
+
+```
+Static Walking:     COM stays within support foot
+Dynamic Walking:    COM may fall outside (controlled fall)
+```
+
+### Gait Parameters
+
+```yaml
+Walking Parameters:
+  step_length: 0.3-0.5 m
+  step_height: 0.05-0.1 m
+  walking_speed: 0.5-1.5 m/s
+  single_support: 40% of gait cycle
+  double_support: 20% of gait cycle
+```
+
+### ZMP (Zero Moment Point)
+
+The ZMP is the point where the sum of all horizontal forces produces zero moment:
+
+```
+ZMP Stability Criterion:
+- ZMP must remain within the support polygon
+- For stable walking: ZMP tracks reference trajectory
+```
+
+## 2.5 Control Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                   PLANNING LAYER                    │
+│         (Path Planning, Trajectory Generation)      │
+├─────────────────────────────────────────────────────┤
+│                  COORDINATION LAYER                  │
+│            (Gait Generation, Balance)               │
+├─────────────────────────────────────────────────────┤
+│                   JOINT CONTROL LAYER               │
+│          (PID Control, Torque Compensation)         │
+├─────────────────────────────────────────────────────┤
+│                 ACTUATOR INTERFACE                  │
+│          (Motor Drivers, Current Control)           │
+└─────────────────────────────────────────────────────┘
+```
+
+## 2.6 Notable Humanoid Robots
+
+| Robot | Developer | Key Features |
+|-------|-----------|--------------|
+| **Atlas** | Boston Dynamics | Dynamic locomotion, manipulation |
+| **ASIMO** | Honda | Smooth walking, environment interaction |
+| **Pepper** | SoftBank | Social interaction, commercial |
+| **Atlas** | Boston Dynamics | Dynamic locomotion, manipulation |
+| **Digit** | Agility Robotics | Warehouse logistics, bipedal |
+
+## 2.7 Learning Objectives
+
+After this chapter, you will understand:
+- [ ] The anatomy of humanoid robots
+- [ ] Different actuation systems and their trade-offs
+- [ ] Proprioception vs. exteroception
+- [ ] The principles of bipedal locomotion
+- [ ] The hierarchical control architecture
+
+## 2.8 Hands-On Exercise
+
+Create a simple 2-link robot arm model in Python:
+
+```python
+import numpy as np
+
+class SimpleArm:
+    def __init__(self, lengths=[0.3, 0.25]):
+        self.l1, self.l2 = lengths
+        self.joints = [0.0, 0.0]  # joint angles in radians
+
+    def forward_kinematics(self):
+        x = self.l1 * np.cos(self.joints[0]) + \
+            self.l2 * np.cos(self.joints[0] + self.joints[1])
+        y = self.l1 * np.sin(self.joints[0]) + \
+            self.l2 * np.sin(self.joints[0] + self.joints[1])
+        return (x, y)
+```
+
+## Quiz
+
+1. What is the difference between proprioception and exteroception?
+2. Why is bipedal walking more challenging than wheeled locomotion?
+3. What is the ZMP and why is it important?
+
+---
+*Previous: [Chapter 1 - Physical AI](/docs/chapter-01-physical-ai) | Next: [Chapter 3 - ROS 2 Fundamentals](/docs/chapter-03-ros2-fundamentals)*

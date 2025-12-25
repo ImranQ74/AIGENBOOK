@@ -1,0 +1,66 @@
+/* Chapter card component styles */
+.chapter-card {
+  display: block;
+  background: var(--ifm-background-surface);
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 12px;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+}
+
+.chapter-card:hover {
+  border-color: var(--ifm-color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 102, 204, 0.12);
+}
+
+.chapter-card-header {
+  margin-bottom: 12px;
+}
+
+.chapter-number {
+  display: inline-block;
+  background: var(--ifm-color-primary-lightest);
+  color: var(--ifm-color-primary);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+[data-theme='dark'] .chapter-number {
+  background: rgba(77, 144, 254, 0.2);
+  color: var(--ifm-color-primary-light);
+}
+
+.chapter-card-title {
+  margin: 0 0 8px 0;
+  color: var(--ifm-font-color-base);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.chapter-card-description {
+  margin: 0 0 16px 0;
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.chapter-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ifm-color-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: gap 0.2s ease;
+}
+
+.chapter-card:hover .chapter-card-link {
+  gap: 10px;
+}
