@@ -5,8 +5,8 @@ const config = {
   title: 'Physical AI & Humanoid Robotics',
   tagline: 'A fast, simple, high-quality learning resource',
   favicon: 'img/favicon.ico',
-  url: 'https://yourusername.github.io',
-  baseUrl: '/AIGENBOOK/',
+  url: 'https://imranq74s-projects.vercel.app',
+  baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   i18n: {
@@ -20,7 +20,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/yourusername/AIGENBOOK/tree/main/',
+          editUrl: 'https://github.com/ImranQ74/AIGENBOOK/tree/main/',
         },
         theme: {
           customCss: './src/css/custom.css',
