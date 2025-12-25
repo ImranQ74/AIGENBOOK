@@ -1,0 +1,114 @@
+---
+title: Chapter 1 - Introduction to Physical AI
+description: Understanding the intersection of artificial intelligence and physical systems
+---
+
+# Introduction to Physical AI
+
+Physical AI represents the convergence of artificial intelligence and embodied systems—robots, autonomous vehicles, and physical devices that interact with the real world. Unlike purely software-based AI, Physical AI must reason about physical constraints, dynamics, and real-time sensory input.
+
+## 1.1 What is Physical AI?
+
+Physical AI is AI that can perceive, reason about, and act in the physical world. It combines:
+
+- **Perception**: Processing sensor data (vision, lidar, tactile)
+- **Reasoning**: Understanding scenes, predicting outcomes
+- **Action**: Controlling physical systems to achieve goals
+
+```
+Physical AI = Perception + Reasoning + Action + Physical Embodiment
+```
+
+## 1.2 Key Characteristics
+
+### Embodied Intelligence
+Unlike LLMs that exist purely in digital space, Physical AI is bound to a physical body. This creates unique challenges:
+
+| Characteristic | Software AI | Physical AI |
+|----------------|-------------|-------------|
+| Feedback Loop | Optional | Essential |
+| Real-time | Not critical | Critical |
+| Safety | Low stakes | High stakes |
+| Sensor Noise | Absent | Present |
+| Physics | Abstracted | Fundamental |
+
+### Closed-Loop Systems
+Physical AI operates in feedback loops:
+1. **Sense**: Collect sensor data
+2. **Process**: Interpret the environment
+3. **Plan**: Decide on actions
+4. **Act**: Execute physical movements
+5. **Observe**: Measure outcomes → repeat
+
+## 1.3 Applications
+
+- **Manufacturing**: Pick-and-place robots, assembly automation
+- **Healthcare**: Surgical robots, rehabilitation devices
+- **Service**: Delivery robots, hospitality assistants
+- **Exploration**: Space rovers, underwater vehicles
+- **Agriculture**: Harvesting robots, crop monitoring
+
+## 1.4 Challenges
+
+### Perception Under Uncertainty
+Real-world perception is noisy:
+```
+Noisy Sensor → Filtering → State Estimation → Action
+               (Kalman/Particle)
+```
+
+### Real-Time Constraints
+Physical systems cannot wait:
+- **Hard Real-Time**: Must respond within deadline (safety-critical)
+- **Soft Real-Time**: Degraded performance if delayed
+
+### Safety and Reliability
+Physical AI failures can cause harm:
+- Fail-safe designs
+- Extensive testing
+- Regulatory compliance
+
+## 1.5 The Physical AI Stack
+
+```
+┌─────────────────────────────────────────┐
+│           Application Layer             │
+│    (Task Planning, Decision Making)     │
+├─────────────────────────────────────────┤
+│           Cognitive Layer               │
+│    (Reasoning, Learning, Language)      │
+├─────────────────────────────────────────┤
+│         Perceptual Layer                │
+│    (Vision, Touch, Proprioception)      │
+├─────────────────────────────────────────┤
+│         Control Layer                   │
+│    (Motion, Force, Balance Control)     │
+├─────────────────────────────────────────┤
+│         Hardware Layer                  │
+│    (Actuators, Sensors, Processors)     │
+└─────────────────────────────────────────┘
+```
+
+## 1.6 Learning Objectives
+
+After this chapter, you will understand:
+- [ ] The definition and scope of Physical AI
+- [ ] How Physical AI differs from software-only AI
+- [ ] The embodied AI feedback loop
+- [ ] Major application domains
+- [ ] Key challenges in the field
+
+## 1.7 Further Reading
+
+- "Physical Intelligence" - Research papers from leading robotics labs
+- "Learning for Dynamics and Control" - MIT OCW course
+- ROS 2 Documentation - Robot Operating System fundamentals
+
+## Quiz
+
+1. What distinguishes Physical AI from traditional software AI?
+2. Why is real-time processing more critical in Physical AI?
+3. Describe the perception-action loop in Physical AI.
+
+---
+*Next: [Chapter 2 - Basics of Humanoid Robotics](/docs/chapter-02-humanoid-robotics)*

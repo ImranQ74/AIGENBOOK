@@ -1,0 +1,299 @@
+---
+title: Chapter 4 - Digital Twin Simulation
+description: Learn to create realistic robot simulations using Gazebo and NVIDIA Isaac
+---
+
+# Digital Twin Simulation
+
+Digital twins are virtual representations of physical systems that enable testing, development, and validation without risking real hardware. This chapter covers Gazebo and NVIDIA Isaac Sim.
+
+## 4.1 Why Simulation Matters
+
+### Benefits of Robot Simulation
+
+| Benefit | Description |
+|---------|-------------|
+| **Safety** | Test dangerous scenarios safely |
+| **Speed** | Iterate faster than hardware permits |
+| **Cost** | No wear-and-tear on equipment |
+| **Parallelization** | Run many tests simultaneously |
+| **Debugging** | Access ground-truth state |
+
+### Simulation-to-Reality Gap
+
+The "sim-to-real" gap is the challenge of transferring learned behaviors from simulation to the real world:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SIMULATION                               │
+│  • Perfect sensors   • Deterministic physics                │
+│  • Known dynamics    • No noise                            │
+├─────────────────────────────────────────────────────────────┤
+│                    REALITY                                  │
+│  • Noisy sensors   • Stochastic dynamics                   │
+│  • Model errors    • Unstructured environments             │
+└─────────────────────────────────────────────────────────────┘
+       ↑                                          ↑
+       └──────────── Sim-to-Real Gap ─────────────┘
+```
+
+## 4.2 Gazebo Simulator
+
+Gazebo is an open-source 3D robot simulator with realistic physics.
+
+### Installation
+
+```bash
+# Ubuntu 22.04 (ROS 2 Humble)
+sudo apt-get install ros-humble-gazebo-ros-pkgs
+
+# Standalone
+sudo apt-get install gazebo libgazebo11-dev
+```
+
+### Basic World
+
+```xml
+<!-- simple_world.sdf -->
+<sdf version="1.6">
+  <world name="simple_world">
+    <!-- Physics plugin -->
+    <physics name="default_physics" default="true" type="ode">
+      <gravity>0 0 -9.81</gravity>
+    </physics>
+
+    <!-- Ground plane -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Gray</name>
+            </script>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Sun -->
+    <light name="sun" type="directional">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 10 10 0 0 0</pose>
+    </light>
+  </world>
+</sdf>
+```
+
+### Creating a Robot Model
+
+```xml
+<!-- mobile_robot.sdf -->
+<sdf version="1.6">
+  <model name="mobile_robot">
+    <link name="chassis">
+      <pose>0 0 0.1 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.5 0.3 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.5 0.3 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Blue</name>
+          </script>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- Wheels -->
+    <link name="wheel_left">
+      <pose>-0.15 0.2 0.05 1.57 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>0.05</length>
+          </cylinder>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="wheel_left_joint" type="revolute">
+      <parent>chassis</parent>
+      <child>wheel_left</child>
+      <axis>
+        <xyz>0 1 0</xyz>
+      </axis>
+    </joint>
+  </model>
+</sdf>
+```
+
+### Gazebo with ROS 2
+
+```python
+# gazebo_spawner.py
+from gazebo_ros import GazeboInterface
+from geometry_msgs.msg import Pose, Point, Quaternion
+
+def spawn_robot():
+    # Create robot description from URDF
+    robot_description = open('robot.urdf').read()
+
+    # Spawn in Gazebo
+    success = GazeboInterface.spawn_urdf(
+        gazebo=gazebo,
+        entity_name='my_robot',
+        robot_description=robot_description,
+        robot_namespace='',
+        initial_pose=Pose(
+            position=Point(x=0.0, y=0.0, z=0.5),
+            orientation=Quaternion(x=0, y=0, z=0, w=1)
+        ),
+        reference_frame='world'
+    )
+```
+
+## 4.3 NVIDIA Isaac Sim
+
+Isaac Sim is a high-fidelity simulator built on NVIDIA Omniverse.
+
+### Key Features
+
+- **Realistic Rendering**: Physically based rendering with RTX
+- **Physics**: PhysX 5 for accurate simulation
+- **ROS 2 Bridge**: Native integration with ROS 2
+- **Isaac Libraries**: Perception, manipulation, navigation
+
+### Installation (Docker)
+
+```bash
+# Pull Isaac Sim container
+docker pull nvcr.io/nvidia/isaac-sim:latest
+
+# Run with GPU support
+docker run --name isaac-sim \
+    --gpus all \
+    --runtime nvidia \
+    -e NVIDIA_VISIBLE_DEVICES=0 \
+    -e NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute \
+    -p 8899:8899 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+    nvcr.io/nvidia/isaac-sim:latest
+```
+
+### Basic Isaac Sim Script
+
+```python
+# isaac_robot.py
+import omni.isaac.core
+from omni.isaac.core import SimulationContext
+
+# Create simulation
+simulation = SimulationContext(
+    stage_units_in_meters=1.0,
+    physics_dt=1.0 / 60.0,
+    rendering_dt=1.0 / 60.0
+)
+
+# Load a robot
+robot_prim = simulation.stage.DefinePrim(
+    "/World/UR10", "ur10"
+)
+robot_prim.GetAttribute("usdfilepath").Set(
+    "omniverse://localhost/NVIDIA/Assets/Robots/UR10.usd"
+)
+
+# Initialize simulation
+simulation.initialize_simulation_context()
+
+# Step simulation
+for _ in range(1000):
+    simulation.step()
+```
+
+### Isaac ROS Bridge
+
+```python
+# isaac_ros_bridge.py
+from isaac_ros2_camera_interfaces.msg import CameraInfo
+from sensor_msgs.msg import Image
+
+# Publish camera data from Isaac Sim
+camera_pub = rospy.Publisher('/camera/color/image_raw', Image, queue_size=10)
+```
+
+## 4.4 Digital Twin Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DIGITAL TWIN PLATFORM                        │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │  Simulation  │  │   Data       │  │   Analytics & ML     │  │
+│  │  Engine      │  │   Pipeline   │  │   Models             │  │
+│  │  (Gazebo/    │  │              │  │                      │  │
+│  │   Isaac)     │  │              │  │                      │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
+│  │   Control    │  │   State      │  │   Visualization      │  │
+│  │   Interface  │  │   Estimation │  │   (RViz/Omniverse)   │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    PHYSICAL ROBOT                               │
+│     (Receives commands, sends sensor data)                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## 4.5 Learning Objectives
+
+After this chapter, you will understand:
+- [ ] The benefits and challenges of robot simulation
+- [ ] How to create worlds and robots in Gazebo
+- [ ] Basic Isaac Sim operations
+- [ ] ROS 2 integration with simulators
+- [ ] The digital twin architecture
+
+## 4.6 Hands-On Exercise
+
+Create a simulation of a differential drive robot:
+
+1. Create a URDF/Xacro model of the robot
+2. Add a LiDAR sensor plugin
+3. Create a Gazebo world with obstacles
+4. Write a simple controller to navigate autonomously
+
+## Quiz
+
+1. What is the "sim-to-real gap" and why does it exist?
+2. How does Isaac Sim differ from Gazebo?
+3. What are the main components of a digital twin system?
+
+---
+*Previous: [Chapter 3 - ROS 2 Fundamentals](/docs/chapter-03-ros2-fundamentals) | Next: [Chapter 5 - Vision-Language-Action Systems](/docs/chapter-05-vla-systems)*

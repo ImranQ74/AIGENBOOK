@@ -1,0 +1,38 @@
+# AIGENBOOK Constitution
+
+## Purpose
+Create a short, clean, professional AI-Native textbook based on the Physical AI & Humanoid Robotics course. The book must serve as a fast, simple, high-quality learning resource built with a modern Docusaurus UI and a fully integrated free-tier RAG chatbot.
+
+## Scope
+- **6 short chapters:**
+  1. Introduction to Physical AI
+  2. Basics of Humanoid Robotics
+  3. ROS 2 Fundamentals
+  4. Digital Twin Simulation (Gazebo + Isaac)
+  5. Vision-Language-Action Systems
+  6. Capstone: Simple AI-Robot Pipeline
+
+## Core Principles
+- **Simplicity** - Clean, focused content
+- **Accuracy** - Technically correct information
+- **Minimalism** - No unnecessary bloat
+- **Fast builds** - Quick iteration cycles
+- **Free-tier architecture** - Accessible to all
+- **RAG answers ONLY from book text** - Grounded responses
+
+## Key Features
+- Docusaurus textbook
+- RAG chatbot (Qdrant + Neon + FastAPI)
+- Select-text → Ask AI
+- Optional Urdu / Personalize features
+
+## Constraints
+- No heavy GPU usage
+- Minimal embeddings
+- Lightweight dependencies
+
+## Success Criteria
+- Build success
+- Accurate chatbot
+- Clean UI
+- Smooth GitHub Pages deployment

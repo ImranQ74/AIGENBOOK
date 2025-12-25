@@ -1,0 +1,207 @@
+# AIGENBOOK Specification
+
+## Project Definition
+AI-Native Physical AI & Humanoid Robotics textbook with integrated RAG chatbot.
+
+## Book Structure
+
+### Chapter 1: Introduction to Physical AI
+- What is Physical AI?
+- Embodied AI vs pure software AI
+- Sensorimotor loop
+- Real-world applications
+- Chapter quiz
+
+### Chapter 2: Basics of Humanoid Robotics
+- Robot anatomy
+- Actuation systems
+- Locomotion types
+- Sensing and perception
+- Chapter quiz
+
+### Chapter 3: ROS 2 Fundamentals
+- ROS 2 architecture (nodes, topics, services, actions)
+- rclcpp and rclpy
+- URDF basics
+- Package creation
+- Launch files
+- Chapter quiz
+
+### Chapter 4: Digital Twin Simulation
+- Gazebo simulation
+- NVIDIA Isaac Sim overview
+- Sim-to-real transfer
+- Environment modeling
+- Chapter quiz
+
+### Chapter 5: Vision-Language-Action Systems
+- VLA model architecture
+- Multimodal foundations
+- Policy learning
+- Real-world deployment
+- Chapter quiz
+
+### Chapter 6: Capstone
+- Complete AI-robot pipeline
+- Design document
+- Implementation guide
+- Evaluation metrics
+
+## Technical Requirements
+
+### Frontend (Docusaurus)
+| Requirement | Specification |
+|-------------|---------------|
+| Framework | Docusaurus 3.x |
+| React | 18.x |
+| Styling | CSS Modules, CSS Variables |
+| i18n | en, ur locales |
+| Sidebar | Auto-generated from docs |
+| Theme | Light/dark mode |
+
+### Backend (FastAPI)
+| Requirement | Specification |
+|-------------|---------------|
+| Framework | FastAPI + Uvicorn |
+| Python | 3.10+ |
+| CORS | Enabled for all origins |
+| Static files | Served from backend |
+
+### RAG Pipeline
+| Component | Technology |
+|-----------|------------|
+| Vector DB | Qdrant (in-memory dev, cloud prod) |
+| Embeddings | sentence-transformers (all-MiniLM-L6-v2) |
+| LLM (local) | microsoft/Phi-3-mini-4k-instruct |
+| LLM (API) | OpenAI-compatible (Groq, Anthropic, etc.) |
+| Database | Neon PostgreSQL (optional, user prefs) |
+| Chunking | Recursive with configurable size/overlap |
+
+### Configuration
+```env
+# Server
+HOST=0.0.0.0
+PORT=8000
+
+# Qdrant
+QDRANT_URL=
+QDRANT_API_KEY=
+QDRANT_COLLECTION_NAME=aigenbook_chunks
+
+# Neon
+NEON_DATABASE_URL=
+
+# Embeddings
+EMBEDDING_MODEL=all-MiniLM-L6-v2
+EMBEDDING_DEVICE=cpu
+
+# LLM
+LLM_PROVIDER=transformers  # or "openai"
+LLM_MODEL=microsoft/Phi-3-mini-4k-instruct
+
+# RAG
+CHUNK_SIZE=500
+CHUNK_OVERLAP=50
+TOP_K=5
+```
+
+## Features
+
+### Required Features
+1. **Textbook Content**
+   - 6 MDX chapters in `/docs`
+   - Auto sidebar generation
+   - Edit URL configuration
+
+2. **RAG Chatbot**
+   - Floating chat button
+   - Chat history
+   - Source citations
+   - Select-text to ask
+   - `/api/chat` endpoint
+
+3. **User Interface**
+   - Responsive layout
+   - Theme toggle
+   - Navbar items (Textbook, AI Chatbot, Locale, Personalize)
+
+### Optional Features
+| Feature | Priority | Status |
+|---------|----------|--------|
+| Urdu translation | Low | i18n configured |
+| Personalize modal | Low | Component exists |
+| Chapter quizzes | Low | Not implemented |
+
+## File Structure
+```
+AIGENBOOK/
+├── docs/                    # Textbook content
+│   ├── chapter-01-*.mdx
+│   ├── chapter-02-*.mdx
+│   ├── chapter-03-*.mdx
+│   ├── chapter-04-*.mdx
+│   ├── chapter-05-*.mdx
+│   └── chapter-06-*.mdx
+├── backend/                 # RAG backend
+│   ├── main.py             # FastAPI app
+│   ├── config.py           # Settings
+│   ├── document_processor.py
+│   ├── vector_store.py
+│   ├── rag_engine.py
+│   ├── user_manager.py
+│   └── requirements.txt
+├── src/
+│   ├── components/
+│   │   ├── Chatbot/        # RAG chatbot UI
+│   │   ├── SelectText/     # Text selection popup
+│   │   ├── PersonalizeModal/
+│   │   └── ChapterCard/
+│   └── theme/Root/
+├── docusaurus.config.js    # Docusaurus config
+├── sidebars.js             # Auto sidebar
+├── package.json
+└── .env.example
+```
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | / | Health check |
+| POST | /api/chat | Chat with RAG |
+| GET | /api/search | Search docs |
+| GET | /api/stats | Collection stats |
+| GET | /api/users/{id}/preferences | Get prefs |
+| PUT | /api/users/{id}/preferences | Update prefs |
+
+## Build & Deploy
+
+### Development
+```bash
+# Frontend
+npm install
+npm run dev
+
+# Backend
+cd backend
+python -m venv venv
+pip install -r requirements.txt
+python main.py
+```
+
+### Production Build
+```bash
+npm run build
+```
+
+### Deployment
+- GitHub Pages (automatic via workflow)
+- Vercel/Netlify (build/ folder)
+
+## Success Criteria
+- [ ] `npm run dev` succeeds
+- [ ] `npm run build` succeeds
+- [ ] Backend starts without errors
+- [ ] Chatbot returns grounded answers
+- [ ] Select-text feature works
+- [ ] GitHub Pages deploys correctly

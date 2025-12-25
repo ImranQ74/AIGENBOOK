@@ -1,0 +1,288 @@
+---
+title: Chapter 5 - Vision-Language-Action Systems
+description: Explore multimodal AI systems that combine visual perception, language understanding, and robotic control
+---
+
+# Vision-Language-Action Systems
+
+VLA (Vision-Language-Action) systems represent a paradigm shift in robotics—unifying perception, reasoning, and action in a single multimodal model.
+
+## 5.1 What is VLA?
+
+VLA models combine three modalities:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    VLA ARCHITECTURE                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   Visual Input          Language Input        Action Output     │
+│   ┌──────┐              ┌──────┐              ┌──────┐         │
+│   │      │              │      │              │      │         │
+│   │  🎥  │              │  💬  │              │  🤖  │         │
+│   │      │              │      │              │      │         │
+│   └───┬──┘              └──┬───┘              └──┬───┘         │
+│       │                    │                     │              │
+│       ▼                    ▼                     ▼              │
+│   ┌─────────────────────────────────────────────────────┐      │
+│   │              Multimodal Transformer                  │      │
+│   │   (Vision Encoder + Language Model + Action Head)   │      │
+│   └─────────────────────────────────────────────────────┘      │
+│                           │                                   │
+│                           ▼                                   │
+│                    Robot Actions                              │
+│           (End Effector Pose, Joint Commands)                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### VLA vs. Traditional Robotics
+
+| Aspect | Traditional | VLA-Based |
+|--------|-------------|-----------|
+| **Perception** | Separate models | Unified encoder |
+| **Reasoning** | Rule-based/LLM | In-model reasoning |
+| **Planning** | Hierarchical | End-to-end |
+| **Adaptation** | Retraining | Prompt engineering |
+| **Language** | Separate NLU | Native understanding |
+
+## 5.2 Key VLA Models
+
+### Notable Systems
+
+| Model | Developer | Key Features |
+|-------|-----------|--------------|
+| **RT-2** | Google DeepMind | Vision-language-action transformer |
+| **RT-X** | Google DeepMind | Open VLA model |
+| **Octo** | Columbia/UCB | Open-source VLA |
+| **OpenVLA** | NVIDIA/CMU | Open-source VLA |
+| **π0** | Physical Intelligence | General-purpose physical AI |
+
+### RT-2 Architecture
+
+```
+Input:
+  Image I ∈ ℝ^(H×W×3)
+  Language Command L
+
+Processing:
+  Vision Encoder: ViT → Patch embeddings
+  Language Encoder: LLaMA → Token embeddings
+  Fusion: Cross-modal attention
+  Action Head: Linear → Action tokens
+
+Output:
+  Action sequence A = {a_1, a_2, ..., a_T}
+  (end-effector pose, gripper state, termination)
+```
+
+## 5.3 Building VLA Systems
+
+### System Architecture
+
+```python
+class VLAController:
+    def __init__(self, model_path, device="cuda"):
+        self.model = load_vla_model(model_path, device)
+        self.tokenizer = get_tokenizer()
+
+    def predict_action(self, image, instruction):
+        """
+        Args:
+            image: RGBD camera observation
+            instruction: Natural language command
+
+        Returns:
+            action: Normalized robot action
+        """
+        # Preprocess
+        vision_tokens = self.model.encode_image(image)
+        text_tokens = self.tokenizer(instruction)
+
+        # Forward pass
+        action_tokens = self.model(vision_tokens, text_tokens)
+
+        # Decode action
+        action = self.decode_action(action_tokens)
+        return action
+
+    def execute(self, observation, instruction):
+        action = self.predict_action(observation, instruction)
+        robot.execute(action)
+```
+
+### Training Pipeline
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                    VLA TRAINING PIPELINE                           │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                    │
+│   ┌─────────┐    ┌─────────────┐    ┌──────────────────────┐      │
+│   │  Robot  │    │   Vision    │    │   Language Data      │      │
+│   │  Data   │───>│  Preprocess │───>│   Collection         │      │
+│   │         │    │             │    │                      │      │
+│   └─────────┘    └─────────────┘    └──────────────────────┘      │
+│         │              │                      │                    │
+│         │              └──────────┬───────────┘                    │
+│         │                         ▼                                 │
+│         │              ┌──────────────────────┐                    │
+│         │              │   Multimodal Dataset │                    │
+│         │              │   (Image-Text-Action)│                    │
+│         │              └──────────┬───────────┘                    │
+│         │                         ▼                                 │
+│         │              ┌──────────────────────┐                    │
+│         │              │   VLA Model Training │                    │
+│         │              │   (Next-token pred.) │                    │
+│         │              └──────────┬───────────┘                    │
+│         │                         ▼                                 │
+│         │              ┌──────────────────────┐                    │
+│         │              │   Evaluation &       │                    │
+│         └─────────────>│   Deployment         │                    │
+│                        └──────────────────────┘                    │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+## 5.4 Action Representations
+
+### Discrete vs. Continuous Actions
+
+```python
+# Action space example
+action_space = {
+    # Continuous: 7-DOF arm pose + gripper
+    'arm_pose': {
+        'type': 'continuous',
+        'dim': 7,
+        'range': [-1.0, 1.0]
+    },
+    # Discrete: gripper open/close
+    'gripper': {
+        'type': 'discrete',
+        'values': [0, 1]  # 0=open, 1=close
+    },
+    # Termination signal
+    'terminate': {
+        'type': 'discrete',
+        'values': [0, 1]  # 1=task complete
+    }
+}
+```
+
+### Normalized Actions
+
+VLA models typically use normalized action spaces:
+
+```python
+# Actions in [-1, 1] range
+normalized_action = {
+    'position_delta': (raw_pose - mean) / std,
+    'rotation_delta': (raw_rotation - mean) / std,
+    'gripper': 2 * (raw_open - 0) / (1 - 0) - 1,  # Normalize to [-1, 1]
+}
+```
+
+## 5.5 Vision-Language Pretraining
+
+### CLIP-style Pretraining
+
+```python
+class CLIPVisionEncoder(nn.Module):
+    def __init__(self, vision_backbone, projection_dim=512):
+        super().__init__()
+        self.vit = vision_backbone
+        self.projection = nn.Linear(vit_embed_dim, projection_dim)
+
+    def forward(self, image):
+        features = self.vit(image)  # [B, N, D]
+        pooled = features[:, 0, :]  # CLS token
+        projected = self.projection(pooled)
+        return projected
+
+class ContrastiveLoss:
+    def forward(self, vision_features, text_features):
+        logits = torch.matmul(vision_features, text_features.T) / temperature
+        labels = torch.arange(len(logits))
+        loss = F.cross_entropy(logits, labels)
+        return loss
+```
+
+## 5.6 Deployment Considerations
+
+### Real-Time Inference
+
+```python
+class RealTimeVLADeployer:
+    def __init__(self, model, min_compute_capability=7.0):
+        self.model = model
+        self.model.half()  # FP16 inference
+        self.model.eval()
+
+    @torch.no_grad()
+    def step(self, image, instruction, timeout_ms=100):
+        start = time.time()
+        action = self.model(image, instruction)
+        elapsed = (time.time() - start) * 1000
+
+        if elapsed > timeout_ms:
+            logger.warning(f"Inference took {elapsed:.1f}ms (target: {timeout_ms}ms)")
+
+        return action
+```
+
+### Safety Constraints
+
+```python
+class SafetyWrapper:
+    def __init__(self, vla_controller, safety_limits):
+        self.controller = vla_controller
+        self.limits = safety_limits
+
+    def execute(self, observation, instruction):
+        raw_action = self.controller.predict_action(observation, instruction)
+
+        # Apply safety constraints
+        safe_action = {
+            'position': self.clamp(raw_action['position'], self.limits['position']),
+            'velocity': self.clamp(raw_action['velocity'], self.limits['velocity']),
+            'force': self.clamp(raw_action['force'], self.limits['force']),
+        }
+
+        return safe_action
+
+    def clamp(self, value, limits):
+        return torch.clamp(value, min=limits['min'], max=limits['max'])
+```
+
+## 5.7 Learning Objectives
+
+After this chapter, you will understand:
+- [ ] The VLA paradigm and its advantages
+- [ ] Key VLA model architectures
+- [ ] Action representation schemes
+- [ ] VLA training and deployment
+- [ ] Safety considerations for VLA systems
+
+## 5.8 Hands-On Exercise
+
+Use the OpenVLA model to control a robot arm:
+
+```python
+# Load pre-trained VLA model
+vla = OpenVLAModel.from_pretrained("openvla/openvla-7b")
+
+# Inference
+action = vla.predict_action(
+    image=camera_obs,
+    instruction="pick up the red cube"
+)
+robot.execute(action)
+```
+
+## Quiz
+
+1. What are the three key modalities in VLA systems?
+2. How does VLA differ from traditional hierarchical robot control?
+3. Why are actions typically normalized in VLA training?
+
+---
+*Previous: [Chapter 4 - Digital Twin Simulation](/docs/chapter-04-digital-twin) | Next: [Chapter 6 - Capstone Project](/docs/chapter-06-capstone)*
