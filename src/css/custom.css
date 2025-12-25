@@ -53,6 +53,16 @@
   transition: all 0.2s ease;
 }
 
+/* Chatbot nav link */
+.chatbot-nav-link {
+  color: var(--ifm-navbar-link-color);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.chatbot-nav-link:hover {
+  color: var(--ifm-color-primary);
+}
 .personalize-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);

@@ -47,7 +47,11 @@ const config = {
             position: 'left',
             label: 'Textbook',
           },
-          {to: '/chatbot', label: 'AI Chatbot', position: 'left'},
+          {
+            type: 'html',
+            position: 'left',
+            value: '<a href="#" class="chatbot-nav-link" onclick="toggleChatbot(); return false;">AI Chatbot</a>',
+          },
           {
             type: 'localeDropdown',
             position: 'right',
