@@ -1,8 +1,10 @@
 """
 Configuration management for RAG chatbot backend.
 """
-from pydantic_settings import BaseSettings
+
 from typing import Optional
+
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):

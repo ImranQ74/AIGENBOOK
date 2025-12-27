@@ -2,26 +2,20 @@
 Vector store interface using Qdrant for RAG.
 Supports both local and cloud Qdrant instances.
 """
-from typing import List, Dict, Any, Optional, Tuple
-from dataclasses import dataclass
+
 import uuid
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    PointStruct,
-    VectorParams,
-    Distance,
-    Filter,
-    FieldCondition,
-    MatchValue,
-    SearchParams,
-)
+from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, SearchParams, VectorParams
 from sentence_transformers import SentenceTransformer
 
 
 @dataclass
 class SearchResult:
     """Represents a search result from the vector store."""
+
     content: str
     source: str
     score: float
@@ -284,5 +278,5 @@ class VectorStore:
 
     def close(self):
         """Close the vector store connection."""
-        if hasattr(self.client, 'close'):
+        if hasattr(self.client, "close"):
             self.client.close()

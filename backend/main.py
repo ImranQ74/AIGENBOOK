@@ -2,20 +2,17 @@
 FastAPI backend for AIGENBOOK RAG Chatbot.
 Provides free-tier friendly RAG with Qdrant + local embeddings.
 """
-import os
-import json
+
 import logging
+from contextlib import asynccontextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
-from datetime import datetime
-from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, field_validator
 import uvicorn
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, field_validator
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +25,7 @@ logger = logging.getLogger(__name__)
 try:
     from slowapi import Limiter, rate_limit_exceeded_handler
     from slowapi.util import get_remote_address
+
     SLOWAPI_AVAILABLE = True
 except ImportError:
     SLOWAPI_AVAILABLE = False
@@ -35,9 +33,9 @@ except ImportError:
 
 from config import settings
 from document_processor import DocumentProcessor
-from vector_store import VectorStore
 from rag_engine import RAGEngine
 from user_manager import UserManager
+from vector_store import VectorStore
 
 # Initialize components
 doc_processor = None
@@ -165,6 +163,7 @@ class DocumentRequest(BaseModel):
 
 # ============= Lifecycle Events =============
 
+
 @app.on_event("startup")
 async def startup():
     global doc_processor, vector_store, rag_engine, user_manager
@@ -207,6 +206,7 @@ async def startup():
 
 # ============= API Endpoints =============
 
+
 @app.get("/")
 async def root():
     """Health check endpoint."""
@@ -223,14 +223,13 @@ async def health_check():
     Detailed health check endpoint for deployment monitoring.
     Returns status of all components.
     """
-    import time
     import socket
 
     health_status = {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "hostname": socket.gethostname(),
-        "components": {}
+        "components": {},
     }
 
     # Check vector store
@@ -239,16 +238,14 @@ async def health_check():
             stats = vector_store.get_collection_stats(settings.qdrant_collection_name)
             health_status["components"]["vector_store"] = {
                 "status": "healthy",
-                "documents": stats.get("points_count", 0)
+                "documents": stats.get("points_count", 0),
             }
         else:
-            health_status["components"]["vector_store"] = {
-                "status": "not_initialized"
-            }
+            health_status["components"]["vector_store"] = {"status": "not_initialized"}
     except Exception as e:
         health_status["components"]["vector_store"] = {
             "status": "unhealthy",
-            "error": str(e)
+            "error": str(e),
         }
         health_status["status"] = "degraded"
 
@@ -256,13 +253,13 @@ async def health_check():
     health_status["components"]["llm"] = {
         "status": "healthy",
         "provider": settings.llm_provider,
-        "model": settings.llm_model
+        "model": settings.llm_model,
     }
 
     # Check user manager
     health_status["components"]["database"] = {
         "status": "healthy" if user_manager else "not_initialized",
-        "type": "neon" if settings.neon_database_url else "memory"
+        "type": "neon" if settings.neon_database_url else "memory",
     }
 
     return health_status
@@ -282,6 +279,7 @@ async def readiness_check():
         return {"status": "ready", "timestamp": datetime.utcnow().isoformat()}
     except Exception as e:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=503, detail=f"Service not ready: {e}")
 
 
@@ -316,7 +314,10 @@ async def chat(request: Request, chat_request: ChatRequest):
 
     except Exception as e:
         logger.error(f"Chat error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An error occurred while generating the response. Please try again.")
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred while generating the response. Please try again.",
+        )
 
 
 @app.get("/api/search")
@@ -378,6 +379,7 @@ async def get_stats():
 
 # ============= User Preferences =============
 
+
 @app.get("/api/users/{user_id}/preferences")
 async def get_preferences(user_id: str):
     """Get user preferences."""
@@ -413,6 +415,7 @@ async def add_to_history(user_id: str, data: dict):
 
 
 # ============= Helper Functions =============
+
 
 async def index_textbook_documents():
     """Index all markdown files from the docs directory."""

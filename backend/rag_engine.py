@@ -2,14 +2,13 @@
 RAG (Retrieval-Augmented Generation) engine.
 Handles question answering using retrieved context.
 """
-import os
+
 import logging
-from typing import List, Dict, Any, Optional
+import os
 from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
 
-from sentence_transformers import SentenceTransformer
-
-from vector_store import VectorStore, SearchResult
+from vector_store import SearchResult, VectorStore
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -18,6 +17,7 @@ logger = logging.getLogger(__name__)
 try:
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+
     TRANSFORMERS_AVAILABLE = True
 except ImportError:
     TRANSFORMERS_AVAILABLE = False
@@ -25,6 +25,7 @@ except ImportError:
 # Optional imports - for API-based inference
 try:
     from openai import OpenAI
+
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -33,6 +34,7 @@ except ImportError:
 @dataclass
 class AnswerResult:
     """Result from RAG generation."""
+
     answer: str
     sources: List[Dict[str, Any]]
     retrieved_contexts: List[SearchResult]
@@ -162,6 +164,7 @@ class RAGEngine:
             Dictionary with answer, sources, and conversation_id
         """
         import uuid
+
         if not conversation_id:
             conversation_id = str(uuid.uuid4())[:8]
 
@@ -205,9 +208,7 @@ class RAGEngine:
         results = self.vector_store.search(query, k=k)
         return self._format_sources(results)
 
-    def _rerank(
-        self, query: str, candidates: List[SearchResult]
-    ) -> List[SearchResult]:
+    def _rerank(self, query: str, candidates: List[SearchResult]) -> List[SearchResult]:
         """Rerank retrieved documents using cross-encoder."""
         if not self.reranker:
             return candidates
@@ -270,7 +271,10 @@ Answer:"""
             response = self.openai_client.chat.completions.create(
                 model=self.llm_model,
                 messages=[
-                    {"role": "system", "content": "You are a helpful AI teaching assistant."},
+                    {
+                        "role": "system",
+                        "content": "You are a helpful AI teaching assistant.",
+                    },
                     {"role": "user", "content": prompt},
                 ],
                 max_tokens=512,
@@ -307,7 +311,7 @@ Answer:"""
         if "Answer:" in full_output:
             answer = full_output.split("Answer:")[-1].strip()
         else:
-            answer = full_output[len(prompt):].strip()
+            answer = full_output[len(prompt) :].strip()
 
         # Clean up
         answer = self._clean_answer(answer)
@@ -336,9 +340,7 @@ Answer:"""
 
         return answer.strip()
 
-    def _format_sources(
-        self, retrieved: List[SearchResult]
-    ) -> List[Dict[str, Any]]:
+    def _format_sources(self, retrieved: List[SearchResult]) -> List[Dict[str, Any]]:
         """Format sources for response."""
         sources = []
 
@@ -346,7 +348,7 @@ Answer:"""
             source = {
                 "id": i + 1,
                 "title": os.path.basename(result.source),
-                "content_preview": result.content[:200] + "..." if len(result.content) > 200 else result.content,
+                "content_preview": (result.content[:200] + "..." if len(result.content) > 200 else result.content),
                 "score": round(result.score, 3),
                 "metadata": result.metadata,
             }

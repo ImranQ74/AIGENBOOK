@@ -1,9 +1,11 @@
 """
 Tests for RAG engine module.
 """
-import pytest
+
 import sys
 from pathlib import Path
+
+import pytest
 
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -11,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 class MockSearchResult:
     """Mock search result for testing."""
+
     def __init__(self, content, source, score=0.9, metadata=None):
         self.content = content
         self.source = source
@@ -20,6 +23,7 @@ class MockSearchResult:
 
 class MockVectorStore:
     """Mock vector store for testing."""
+
     def __init__(self):
         self.search_results = []
 
@@ -40,12 +44,12 @@ class TestRAGEngine:
             MockSearchResult(
                 content="Physical AI involves embodied AI systems.",
                 source="chapter-01-physical-ai.mdx",
-                score=0.95
+                score=0.95,
             ),
             MockSearchResult(
                 content="Humanoid robots have human-like form.",
                 source="chapter-02-humanoid-robotics.mdx",
-                score=0.85
+                score=0.85,
             ),
         ]
 
@@ -100,7 +104,7 @@ class TestRAGEngine:
                 content="Full content here",
                 source="chapter-01-physical-ai.mdx",
                 score=0.95,
-                metadata={"page": 1}
+                metadata={"page": 1},
             ),
         ]
 
@@ -182,7 +186,7 @@ class TestChatRequest:
             question="Explain bipedal locomotion",
             user_id="user123",
             conversation_id="conv456",
-            selected_text="ZMP is a key concept"
+            selected_text="ZMP is a key concept",
         )
 
         assert request.question == "Explain bipedal locomotion"

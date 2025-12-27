@@ -1,10 +1,12 @@
 """
 Pytest configuration and fixtures.
 """
-import pytest
+
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 # Add backend to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -20,16 +22,14 @@ def anyio_backend():
 def mock_rag_engine():
     """Create a mock RAG engine for testing."""
     engine = MagicMock()
-    engine.generate_answer = AsyncMock(return_value={
-        "answer": "Physical AI refers to AI systems that interact with the physical world.",
-        "sources": [
-            {"id": 1, "title": "chapter-01-physical-ai.mdx", "score": 0.95}
-        ],
-        "conversation_id": "test-conv-123"
-    })
-    engine.search = MagicMock(return_value=[
-        {"id": 1, "title": "chapter-01-physical-ai.mdx", "score": 0.95}
-    ])
+    engine.generate_answer = AsyncMock(
+        return_value={
+            "answer": "Physical AI refers to AI systems that interact with the physical world.",
+            "sources": [{"id": 1, "title": "chapter-01-physical-ai.mdx", "score": 0.95}],
+            "conversation_id": "test-conv-123",
+        }
+    )
+    engine.search = MagicMock(return_value=[{"id": 1, "title": "chapter-01-physical-ai.mdx", "score": 0.95}])
     return engine
 
 
@@ -37,12 +37,14 @@ def mock_rag_engine():
 def mock_user_manager():
     """Create a mock user manager for testing."""
     manager = MagicMock()
-    manager.get_preferences = AsyncMock(return_value={
-        "language": "en",
-        "font_size": "medium",
-        "theme": "system",
-        "preferences": {}
-    })
+    manager.get_preferences = AsyncMock(
+        return_value={
+            "language": "en",
+            "font_size": "medium",
+            "theme": "system",
+            "preferences": {},
+        }
+    )
     manager.set_preferences = AsyncMock()
     manager.add_to_history = AsyncMock()
     return manager
@@ -54,10 +56,7 @@ def mock_vector_store():
     store = MagicMock()
     store.search = MagicMock(return_value=[])
     store.add_documents = MagicMock()
-    store.get_collection_stats = MagicMock(return_value={
-        "points_count": 100,
-        "collections": ["aigenbook_chunks"]
-    })
+    store.get_collection_stats = MagicMock(return_value={"points_count": 100, "collections": ["aigenbook_chunks"]})
     return store
 
 
@@ -65,9 +64,11 @@ def mock_vector_store():
 def client(mock_rag_engine, mock_user_manager):
     """Create a test client with mocked dependencies."""
     from fastapi.testclient import TestClient
-    from main import app
+
     # Override the global instances
     import main
+    from main import app
+
     main.rag_engine = mock_rag_engine
     main.user_manager = mock_user_manager
     return TestClient(app)

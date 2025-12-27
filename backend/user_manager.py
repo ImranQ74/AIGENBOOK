@@ -2,12 +2,13 @@
 User management with Neon PostgreSQL integration.
 Stores user preferences and conversation history.
 """
-import json
-from typing import Dict, Any, Optional, List
-from datetime import datetime
 
-from sqlalchemy import Column, String, Text, DateTime, JSON, select, insert
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+import json
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+from sqlalchemy import JSON, Column, DateTime, String, Text, select
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 Base = declarative_base()
@@ -15,6 +16,7 @@ Base = declarative_base()
 
 class Conversation(Base):
     """SQLAlchemy model for conversation history."""
+
     __tablename__ = "conversations"
 
     id = Column(String(36), primary_key=True)
@@ -27,6 +29,7 @@ class Conversation(Base):
 
 class UserPreferences(Base):
     """SQLAlchemy model for user preferences."""
+
     __tablename__ = "user_preferences"
 
     user_id = Column(String(255), primary_key=True)
@@ -62,9 +65,7 @@ class UserManager:
                     pool_size=5,
                     max_overflow=10,
                 )
-                self.async_session = sessionmaker(
-                    self.async_engine, class_=AsyncSession, expire_on_commit=False
-                )
+                self.async_session = sessionmaker(self.async_engine, class_=AsyncSession, expire_on_commit=False)
                 print("UserManager: Async database engine initialized")
             except Exception as e:
                 print(f"UserManager: Failed to create async engine: {e}")
@@ -88,9 +89,12 @@ class UserManager:
         """Ensure tables exist (create if needed)."""
         if self.use_database and self.async_engine:
             from sqlalchemy import text
+
             async with self.async_engine.begin() as conn:
                 # Create tables using raw SQL for compatibility
-                await conn.execute(text("""
+                await conn.execute(
+                    text(
+                        """
                     CREATE TABLE IF NOT EXISTS conversations (
                         id VARCHAR(36) PRIMARY KEY,
                         user_id VARCHAR(255) NOT NULL,
@@ -99,8 +103,12 @@ class UserManager:
                         sources JSONB,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                """))
-                await conn.execute(text("""
+                """
+                    )
+                )
+                await conn.execute(
+                    text(
+                        """
                     CREATE TABLE IF NOT EXISTS user_preferences (
                         user_id VARCHAR(255) PRIMARY KEY,
                         language VARCHAR(10) DEFAULT 'en',
@@ -109,12 +117,18 @@ class UserManager:
                         preferences JSONB,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
-                """))
+                """
+                    )
+                )
                 # Create indexes
-                await conn.execute(text("""
+                await conn.execute(
+                    text(
+                        """
                     CREATE INDEX IF NOT EXISTS idx_conversations_user_id
                     ON conversations(user_id)
-                """))
+                """
+                    )
+                )
 
     # ============= Conversation Management =============
 
@@ -143,14 +157,16 @@ class UserManager:
                 session.add(conv)
                 await session.commit()
         else:
-            self._memory_conversations.append({
-                "id": conv_id,
-                "user_id": user_id,
-                "question": question,
-                "answer": answer,
-                "sources": sources,
-                "created_at": created_at.isoformat(),
-            })
+            self._memory_conversations.append(
+                {
+                    "id": conv_id,
+                    "user_id": user_id,
+                    "question": question,
+                    "answer": answer,
+                    "sources": sources,
+                    "created_at": created_at.isoformat(),
+                }
+            )
 
     async def get_history(
         self,
@@ -173,15 +189,12 @@ class UserManager:
                         "question": row.question,
                         "answer": row.answer,
                         "sources": json.loads(row.sources) if row.sources else None,
-                        "created_at": row.created_at.isoformat() if row.created_at else None,
+                        "created_at": (row.created_at.isoformat() if row.created_at else None),
                     }
                     for row in rows
                 ]
         else:
-            return [
-                conv for conv in self._memory_conversations
-                if conv["user_id"] == user_id
-            ][:limit]
+            return [conv for conv in self._memory_conversations if conv["user_id"] == user_id][:limit]
 
     # ============= Preferences Management =============
 
@@ -190,10 +203,11 @@ class UserManager:
         if self.use_database and self.async_session:
             try:
                 from sqlalchemy import text
+
                 async with self.async_session() as session:
                     result = await session.execute(
                         text("SELECT * FROM user_preferences WHERE user_id = :user_id"),
-                        {"user_id": user_id}
+                        {"user_id": user_id},
                     )
                     row = result.fetchone()
                     if row:
@@ -219,9 +233,11 @@ class UserManager:
         if self.use_database and self.async_session:
             try:
                 from sqlalchemy import text
+
                 async with self.async_session() as session:
                     await session.execute(
-                        text("""
+                        text(
+                            """
                             INSERT INTO user_preferences (user_id, language, font_size, theme, preferences, updated_at)
                             VALUES (:user_id, :language, :font_size, :theme, :preferences, NOW())
                             ON CONFLICT (user_id) DO UPDATE SET
@@ -230,14 +246,15 @@ class UserManager:
                                 theme = EXCLUDED.theme,
                                 preferences = EXCLUDED.preferences,
                                 updated_at = NOW()
-                        """),
+                        """
+                        ),
                         {
                             "user_id": user_id,
                             "language": preferences.get("language", "en"),
                             "font_size": preferences.get("font_size", "medium"),
                             "theme": preferences.get("theme", "system"),
                             "preferences": json.dumps(preferences.get("preferences", {})),
-                        }
+                        },
                     )
                     await session.commit()
             except Exception as e:
@@ -250,4 +267,5 @@ class UserManager:
     def _generate_id(self) -> str:
         """Generate a unique ID."""
         import uuid
+
         return str(uuid.uuid4())

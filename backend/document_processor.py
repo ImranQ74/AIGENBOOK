@@ -1,16 +1,17 @@
 """
 Document processor for chunking and preparing textbook content for RAG.
 """
-import os
+
 import re
-from pathlib import Path
-from typing import List, Dict, Any
 from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Dict, List
 
 
 @dataclass
 class TextChunk:
     """Represents a chunk of text with metadata."""
+
     content: str
     source: str
     chunk_id: str
@@ -85,9 +86,7 @@ class DocumentProcessor:
 
         return frontmatter
 
-    def _process_markdown(
-        self, content: str, source: str, frontmatter: Dict
-    ) -> List[TextChunk]:
+    def _process_markdown(self, content: str, source: str, frontmatter: Dict) -> List[TextChunk]:
         """
         Process markdown content into chunks.
         Preserves code blocks and headers as atomic units.
@@ -98,7 +97,7 @@ class DocumentProcessor:
         if content.startswith("---"):
             end_idx = content.find("---", 3)
             if end_idx > 0:
-                content = content[end_idx + 3:]
+                content = content[end_idx + 3 :]
 
         # Split into sections by headers
         sections = self._split_by_headers(content)
@@ -162,16 +161,16 @@ class DocumentProcessor:
         # Simple code block extraction
         code_pattern = r"```[\s\S]*?```"
         for i, match in enumerate(re.finditer(code_pattern, content)):
-            code_blocks.append({
-                "placeholder": f"__CODE_BLOCK_{i}__",
-                "content": match.group(),
-            })
+            code_blocks.append(
+                {
+                    "placeholder": f"__CODE_BLOCK_{i}__",
+                    "content": match.group(),
+                }
+            )
 
         # Replace code blocks with placeholders
         for block in code_blocks:
-            content_without_code = content_without_code.replace(
-                block["content"], block["placeholder"]
-            )
+            content_without_code = content_without_code.replace(block["content"], block["placeholder"])
 
         # Split into paragraphs
         paragraphs = content_without_code.split("\n\n")
@@ -191,9 +190,7 @@ class DocumentProcessor:
             # Check if adding this paragraph would exceed chunk size
             if char_count + len(para) > self.chunk_size and current_chunk:
                 # Create chunk
-                chunk = self._create_chunk(
-                    current_chunk, source, chunk_start, char_count, section_title
-                )
+                chunk = self._create_chunk(current_chunk, source, chunk_start, char_count, section_title)
                 chunks.append(chunk)
 
                 # Handle overlap
@@ -210,9 +207,7 @@ class DocumentProcessor:
 
         # Don't forget last chunk
         if current_chunk.strip():
-            chunk = self._create_chunk(
-                current_chunk, source, chunk_start, char_count, section_title
-            )
+            chunk = self._create_chunk(current_chunk, source, chunk_start, char_count, section_title)
             chunks.append(chunk)
 
         return chunks
@@ -231,9 +226,8 @@ class DocumentProcessor:
 
         # Generate unique ID
         import hashlib
-        chunk_id = hashlib.md5(
-            f"{source}:{start_char}:{end_char}".encode()
-        ).hexdigest()[:12]
+
+        chunk_id = hashlib.md5(f"{source}:{start_char}:{end_char}".encode()).hexdigest()[:12]
 
         return TextChunk(
             content=content,
@@ -268,17 +262,18 @@ class DocumentProcessor:
 
             if chunk_content.strip():
                 import hashlib
-                chunk_id = hashlib.md5(
-                    f"{source}:{start}:{end}".encode()
-                ).hexdigest()[:12]
 
-                chunks.append(TextChunk(
-                    content=chunk_content.strip(),
-                    source=source,
-                    chunk_id=chunk_id,
-                    start_char=start,
-                    end_char=end,
-                ))
+                chunk_id = hashlib.md5(f"{source}:{start}:{end}".encode()).hexdigest()[:12]
+
+                chunks.append(
+                    TextChunk(
+                        content=chunk_content.strip(),
+                        source=source,
+                        chunk_id=chunk_id,
+                        start_char=start,
+                        end_char=end,
+                    )
+                )
 
             start = end - self.chunk_overlap if self.chunk_overlap > 0 else end
 
