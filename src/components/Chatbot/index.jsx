@@ -211,7 +211,7 @@ const Chatbot = () => {
       setIsLoading(false);
       setSelectedText(null);
     }
-  }, [input, isLoading, selectedText, selection]);
+  }, [input, isLoading, selectedText]);
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
